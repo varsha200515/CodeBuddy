@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+/* RESET + BASE */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BODY */
+body {
+  background: #ffffff;
+  color: #0A0A0A;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* OPTIONAL GLOBAL BORDER (lighter, not ugly) */
+* {
+  border-color: #e5e7eb;
+}
+
+/* HEADINGS */
+.font-heading {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* MONO TEXT (code blocks etc) */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* NICE SCROLLBAR (optional but cool) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
