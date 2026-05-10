@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Code Buddy</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      color: white;
+
+      background: linear-gradient(135deg, #0A2353, #5B58EB, #BB63FF, #FF49C1);
+      background-size: 400% 400%;
+      animation: moveGradient 12s ease infinite;
+    }
+
+    @keyframes moveGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 0 30px rgba(187, 99, 255, 0.3);
+    }
+
+    .btn-dark {
+      background: rgba(10, 35, 83, 0.9);
+      padding: 10px;
+      border-radius: 10px;
+      width: 100%;
+      margin-top: 10px;
+      transition: 0.2s;
+    }
+
+    .btn-dark:hover {
+      transform: scale(1.03);
+      background: rgba(20, 50, 120, 0.9);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: black;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    #lang {
+      color: black;
+      font-family: Calibri;
+      background: white;
+    }
+
+    /* ✅ FIXED TITLE (PURE WHITE) */
+    .title {
+      text-align: center;
+      font-size: 3rem;
+      font-weight: 900;
+      margin-bottom: 30px;
+      color: white; /* 🔥 THIS IS THE FIX */
+    }
+  </style>
+</head>
+
+<body class="p-10">
+
+<h1 class="title">Code Buddy 🚀</h1>
+
+<!-- CODE INPUT -->
+<div class="glass p-6 mb-6">
+  <textarea id="code" class="w-full p-3 h-32 text-black mb-3"
+    placeholder="Paste your code"></textarea>
+
+  <select id="lang" class="w-full p-3 mb-3">
+    <option value="">Select Language</option>
+    <option>Python</option>
+    <option>JavaScript</option>
+    <option>Java</option>
+    <option>C</option>
+    <option>C++</option>
+    <option>C#</option>
+    <option>Go</option>
+    <option>Rust</option>
+    <option>Ruby</option>
+  </select>
+
+  <button onclick="reviewCode()" class="btn-dark">Analyze Code</button>
+</div>
+
+<!-- GITHUB INPUT -->
+<div class="glass p-6 mb-6">
+  <input id="repo" class="w-full p-3 text-black mb-3"
+    placeholder="Paste GitHub URL">
+
+  <button onclick="reviewRepo()" class="btn-dark">Analyze Repo</button>
+</div>
+
+<!-- OUTPUT -->
+<div id="output"></div>
+
+<script>
+const API = "http://127.0.0.1:8000/api";
+
+function toggle(id) {
+  document.getElementById(id).classList.toggle("hidden");
+}
+
+function copyCode() {
+  const text = document.getElementById("fixedCodeText").innerText;
+  navigator.clipboard.writeText(text);
+  alert("Copied!");
+}
+
+function formatList(list) {
+  if (!list || list.length === 0) return "No data";
+
+  return list.map(i => {
+    if (typeof i === "string") return `<p>• ${i}</p>`;
+    return `<p>• ${i.description || JSON.stringify(i)}</p>`;
+  }).join("");
+}
+
+function renderResult(data) {
+  document.getElementById("output").innerHTML = `
+    <button onclick="toggle('i')" class="btn-dark">🚨 Issues</button>
+    <div id="i" class="hidden glass p-3">${formatList(data.issues)}</div>
+
+    <button onclick="toggle('m')" class="btn-dark">⚡ Improvements</button>
+    <div id="m" class="hidden glass p-3">${formatList(data.improvements)}</div>
+
+    <button onclick="toggle('f')" class="btn-dark">✅ Fixed Code</button>
+    <div id="f" class="hidden glass p-3 relative">
+      <button class="copy-btn" onclick="copyCode()">Copy</button>
+      <pre id="fixedCodeText">${data.fixed_code || "No code"}</pre>
+    </div>
+
+    <button onclick="toggle('e')" class="btn-dark">📘 Explanation</button>
+    <div id="e" class="hidden glass p-3">${data.explanation || "No explanation"}</div>
+  `;
+}
+
+async function reviewCode() {
+  try {
+    const code = document.getElementById("code").value;
+    const language = document.getElementById("lang").value;
+
+    if (!code || !language) return alert("Fill inputs");
+
+    const res = await fetch(`${API}/review/code`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({code,language})
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.detail || "Error");
+
+    renderResult(data);
+
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function reviewRepo() {
+  try {
+    const repo = document.getElementById("repo").value;
+
+    if (!repo) return alert("Enter repo URL");
+
+    const res = await fetch(`${API}/review/github`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({repo_url:repo})
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.detail || "Error");
+
+    renderResult(data);
+
+  } catch (err) {
+    alert(err.message);
+  }
+}
+</script>
+
+</body>
+</html>
